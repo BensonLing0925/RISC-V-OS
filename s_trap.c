@@ -26,6 +26,7 @@ void s_handle_trap(struct trapframe* kframe) {
 				utils_printf("[s-trap] Environment call from U mode (ecall)\n");
 				sepc += 4;
 				asm volatile("csrw sepc, %0" :: "r"(sepc));
+				syscall_dispatch(kframe->a7, kframe->a0, kframe->a1, kframe->a2);
 				break;
 
 			case 0x9:		// ecall from S mode 

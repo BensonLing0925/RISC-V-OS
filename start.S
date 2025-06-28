@@ -14,8 +14,7 @@ _start:
     # Set up M-mode trap handler
     call init_trap
     
-    # Jump to S-mode (this will handle paging setup)
-    call jump_to_smode
+    call init_vm
     
     # Should never reach here
 1:  j 1b

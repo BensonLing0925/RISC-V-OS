@@ -37,4 +37,6 @@ SECTIONS {
 		. = . + 4096;
 		sstack_top = .;
 	}
+
+	end = .;
 }
