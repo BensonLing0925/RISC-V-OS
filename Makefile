@@ -1,6 +1,6 @@
 CROSS = riscv64-unknown-elf
 CFLAGS = -O0 -g -ffreestanding -nostdlib -mabi=lp64 -march=rv64g -mcmodel=medany
-OBJS = start.o uart.o utils.o init.o trap.o trap_c.o smain.o mem.o s_trap.o syscall.o exec.o
+OBJS = start.o uart.o utils.o init.o trap.o trap_c.o smain.o mem.o s_trap.o syscall.o exec.o umain.o
 
 all: kernel.elf
 

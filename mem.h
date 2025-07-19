@@ -32,10 +32,16 @@
 void setup_pmp();
 void setup_pagetable();
 void enable_paging(uintptr_t* pagetable);
+void enable_paging_user(uintptr_t* user_pagetable);
+void kernel_map_user(uintptr_t* user_pagetable);
+void kernel_map_user_debug(uintptr_t* user_pagetable);
+void debug_current_stack_mapping(uintptr_t* user_pagetable);
+void minimal_page_table_switch_test(uintptr_t* user_pagetable);
 void memset(void* mem, char ch, uint32_t size);
 void memcpy(void* mem1, const void* mem2, size_t n);
 void* alloc_page();
 void* walk(uintptr_t* root, void* v_addr);
+void* walk_noalloc(uintptr_t* root, void* v_addr);
 void map_page(uintptr_t* l2_table, void* v_addr, void* p_addr, uint64_t flags);
 
 #endif

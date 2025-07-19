@@ -3,9 +3,9 @@ set $pc=0x80000000
 
 b jump_to_smode
 b trap_entry
-b mem.c:45
+b smain
+b minimal_page_table_switch_test
 
 display /x $pc
-display /x $mepc
-display /x &smain
+display /x user_pagetable
 n

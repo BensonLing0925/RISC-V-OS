@@ -37,7 +37,16 @@ void s_handle_trap(struct trapframe* kframe) {
 				sepc += 4;
 				asm volatile("csrw sepc, %0" :: "r"(sepc));
 				break;
+
+			default:  // 🔥 ADD THIS
+				utils_printf("[s-trap] Unhandled trap!\n");
+				utils_printf("scause: %x\n", scause);
+				utils_printf("sepc:   %x\n", sepc);
+				utils_printf("stval:  %x\n", stval);
+				while (1);  // halt
 		}
+
+
 	}
 	// interrupt (bit 63 is 1)
 	else {
