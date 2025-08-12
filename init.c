@@ -32,16 +32,17 @@ void init_vm() {
     // CRITICAL: Set up PMP before mret
     setup_pmp();
     setup_kernel_pagetable();
-    enable_paging(kernel_l2_pagetable);
 }
 
 void jump_to_smode() {
+
+	// enable MMU first
+    enable_paging(kernel_l2_pagetable);
+
     uintptr_t smain_addr = (uintptr_t)smain;
-    // uintptr_t sstack_addr = (uintptr_t)sstack_top;
-    
     
 	uintptr_t sstack_addr = (uintptr_t)alloc_page();
-	map_page(kernel_l2_pagetable, (void*)SSTACK_ADDR, (void*)sstack_addr, PTE_V | PTE_W | PTE_R );
+	map_page_physical(kernel_l2_pagetable, (void*)SSTACK_ADDR, (void*)sstack_addr, PTE_V | PTE_W | PTE_R, alloc_page );
 
     // Configure mstatus for S-mode transition
     uintptr_t mstatus;
@@ -102,7 +103,9 @@ void jump_to_umode(uintptr_t user_prog_entry, uintptr_t* pagetable) {
     utils_printf("New SATP value: %x\n", satp);
     
     // CRITICAL FIX: Set stack pointer to within the mapped stack page
-    uintptr_t user_stack_ptr = USER_STACK_TOP - 8;
+    uintptr_t user_stack_ptr = USER_STACK_TOP;
+	utils_printf("user_stack_ptr: %x\n", user_stack_ptr);
+	// asm volatile("mv sp, %0" :: "r"(user_stack_ptr));
     
 	/*
     // Switch page table AND jump to user mode atomically
@@ -119,6 +122,7 @@ void jump_to_umode(uintptr_t user_prog_entry, uintptr_t* pagetable) {
 	asm volatile(
 		"csrw satp, %1\n\t"
 		"sfence.vma\n\t"
+		"mv sp, %3\n\t"
 		"lb t1, %2\n\t"           // Load 'O' character (79)
 		"sb t1, 0(%0)\n\t"        // Write to UART
 		"addi t1, t1, -4\n\t"     // Change to 'K' (79-4=75)  
@@ -126,7 +130,7 @@ void jump_to_umode(uintptr_t user_prog_entry, uintptr_t* pagetable) {
 		"li t1, 10\n\t"           // '\n'
 		"sb t1, 0(%0)\n\t"        // Write to UART
 		"sret"
-		:: "r"(UART_ADDR), "r"(satp), "m"(*(char*)&"O"[0])
+		:: "r"(UART_ADDR), "r"(satp), "m"(*(char*)&"O"[0]), "r"(user_stack_ptr)
 		: "memory", "t1"
 	);
 
@@ -186,37 +190,3 @@ void jump_to_umode_debug(uintptr_t user_prog_entry, uintptr_t* pagetable) {
     );
 }
 
-void jump_to_umode_no_stack_change(uintptr_t user_prog_entry, uintptr_t* pagetable) {
-    utils_printf("=== Testing without changing stack ===\n");
-    
-    // Configure sstatus for U-mode transition
-    uintptr_t sstatus;
-    asm volatile("csrr %0, sstatus" : "=r"(sstatus));
-    
-    // set SPP to user mode
-    sstatus &= ~(1L << 8);
-    asm volatile("csrw sstatus, %0" :: "r"(sstatus));
-    asm volatile("csrw sepc, %0" :: "r"(user_prog_entry));
-
-    // Map kernel into user page table
-    kernel_map_user(pagetable);
-    
-    // Map user program
-    uintptr_t user_prog_page = user_prog_entry & ~(PAGE_SIZE - 1);
-    map_page(pagetable, (void*)user_prog_page, (void*)user_prog_page, PTE_V | PTE_R | PTE_X | PTE_U);
-    
-    // Prepare SATP value
-    uintptr_t satp = (8UL << 60) | ((uintptr_t)pagetable >> 12);
-    
-    utils_printf("Switching page table but keeping current stack\n");
-    
-    // Switch page table AND jump to user mode atomically
-    // DON'T change the stack pointer - keep using kernel stack temporarily
-    asm volatile(
-        "csrw satp, %0\n\t"          // Switch page table
-        "sfence.vma zero, zero\n\t"   // Flush TLB
-        "sret"                        // Jump to user mode (with kernel stack!)
-        :: "r"(satp)
-        : "memory"
-    );
-}

@@ -1,7 +1,11 @@
-#include <stdint.h>
-void umain() {
-    register long a7 asm("a7") = 0x1; // syscall number for SYS_write
-	const char* msg = "Hello from the user program!\n";
-    register long a0 asm("a0") = (uintptr_t)msg; // syscall number for SYS_write
-    asm volatile("ecall");
+const char msg[] = "Hello from user program!\n";
+
+void _start() {
+    asm volatile (
+        "la a0, msg\n"
+        "li a7, 2\n"
+        "ecall\n"
+    );
+	while (1);
 }
+

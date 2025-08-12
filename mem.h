@@ -14,7 +14,8 @@
 #define UART_ADDR 0x10000000UL
 
 #define USER_BASE      0x00010000UL      // where user code starts
-#define USER_STACK_TOP 0x7FFFFFF0UL      // top of user stack
+#define USER_MAX_VADDR 0x00030000UL
+#define USER_STACK_TOP 0x80000000UL      // top of user stack 
 #define USER_STACK_SIZE PAGE_SIZE        // 1 page for now
 
 #define PTE_V (1L << 0)
@@ -26,8 +27,25 @@
 #define PTE_A (1L << 6)
 #define PTE_D (1L << 7)
 
-#define IS_BIT_SET(n,x)   (((n & (1 << x)) != 0) ? 1 : 0)
+#define IS_BIT_SET(n,x)	(((n & (1 << x)) != 0) ? 1 : 0)
 #define VPN(level, addr)	(((uintptr_t)addr >> (12 + 9 * (level))) & 0x1ff)
+
+// direct mapping for the rest of the physical memory region
+#define PHYS_BASE	0x80000000
+#define PHYS_END	0x84000000
+#define DIRECT_MAP_OFFSET	0x40000000
+// identity mapping range: 0x80000000 to 0x80200000
+// direct mapping range: from (0x80000000 - 0x84000000) to (0xC0000000 - 0xC4000000)
+#define PHYS_TO_VIRT(pa)	((pa) + DIRECT_MAP_OFFSET)
+#define VIRT_TO_PHYS(va)	((va) - DIRECT_MAP_OFFSET)
+
+// fixed memory region for copy_from_user
+#define SCRATCH_VA_START	0xFFFF0000
+#define SCRATCH_VA_END	0xFFFFFFFF
+
+typedef uint64_t pte_t;
+typedef pte_t* pagetable_t;
+typedef void* (*page_alloc_fn)();
 
 void setup_pmp();
 void setup_pagetable();
@@ -40,8 +58,11 @@ void minimal_page_table_switch_test(uintptr_t* user_pagetable);
 void memset(void* mem, char ch, uint32_t size);
 void memcpy(void* mem1, const void* mem2, size_t n);
 void* alloc_page();
-void* walk(uintptr_t* root, void* v_addr);
-void* walk_noalloc(uintptr_t* root, void* v_addr);
-void map_page(uintptr_t* l2_table, void* v_addr, void* p_addr, uint64_t flags);
+void* alloc_user_page();
+pte_t* walk(uintptr_t* root, void* v_addr, page_alloc_fn allocator);
+pte_t* walk_noalloc(uintptr_t* root, void* v_addr);
+pte_t* walk_physical(uintptr_t* root, void* v_addr, page_alloc_fn allocator);
+void map_page(uintptr_t* l2_table, void* v_addr, void* p_addr, uint64_t flags, page_alloc_fn allocator);
+void map_page_physical(uintptr_t* l2_table, void* v_addr, void* p_addr, uint64_t flags, page_alloc_fn allocator);
 
 #endif

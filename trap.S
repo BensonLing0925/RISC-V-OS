@@ -68,6 +68,9 @@ trap_entry:
 
 .global s_trap_entry
 s_trap_entry:
+
+	csrrw sp, sscratch, sp
+
 	addi sp, sp, -272
 	
 	sd ra, 0(sp)
@@ -153,4 +156,7 @@ s_trap_entry:
 	csrw satp, t0
 
 	addi sp, sp, 272
+
+	csrrw sp, sscratch, sp
+
 	sret

@@ -1,11 +1,10 @@
 target remote :1234
 set $pc=0x80000000
 
-b jump_to_smode
-b trap_entry
-b smain
-b minimal_page_table_switch_test
+b syscall_dispatch
+b copy_from_user
+b exec.c:15
 
 display /x $pc
-display /x user_pagetable
+display /x user_pagetable[0]
 n

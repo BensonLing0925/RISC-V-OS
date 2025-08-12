@@ -1,6 +1,6 @@
 CROSS = riscv64-unknown-elf
 CFLAGS = -O0 -g -ffreestanding -nostdlib -mabi=lp64 -march=rv64g -mcmodel=medany
-OBJS = start.o uart.o utils.o init.o trap.o trap_c.o smain.o mem.o s_trap.o syscall.o exec.o umain.o
+OBJS = start.o uart.o utils.o init.o trap.o trap_c.o smain.o mem.o s_trap.o syscall.o exec.o usercopy.o
 
 all: kernel.elf
 
@@ -23,7 +23,7 @@ run: kernel.elf
 	qemu-system-riscv64 -machine virt -nographic -bios none -kernel kernel.elf
 
 load: 
-	riscv64-unknown-elf-gcc -nostdlib -static -o umain.elf umain.c
+	riscv64-unknown-elf-gcc -march=rv64ima -nostdlib -static -o umain.elf umain.c
 	riscv64-unknown-elf-objcopy -O binary umain.elf user.bin
 	xxd -i user.bin > user_program.h
 
