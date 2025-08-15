@@ -31,8 +31,8 @@ uintptr_t load_user_program(const char* user_program, size_t program_size) {
 
 	// copy user program onto pages
 	for (size_t offset = 0 ; offset < program_size ; offset += PAGE_SIZE) {
-		void* page = alloc_user_page();
-		map_page(user_pagetable, (void*) (USER_BASE + offset), page, PTE_V | PTE_X | PTE_R | PTE_U | PTE_W, alloc_user_page);		
+		void* page = alloc_page();
+		map_page(user_pagetable, (void*) (USER_BASE + offset), page, PTE_V | PTE_X | PTE_R | PTE_U | PTE_W, alloc_page);		
 		size_t copy_size = (program_size - offset) < PAGE_SIZE ? (program_size - offset) : PAGE_SIZE;
 		// memcpy(page, (const void*) user_program + offset, copy_size);
     	memcpy((void*)PHYS_TO_VIRT((uintptr_t)page), 
@@ -40,8 +40,8 @@ uintptr_t load_user_program(const char* user_program, size_t program_size) {
 	}
 
 	// allocate user stack
-	uintptr_t user_stack = (uintptr_t)alloc_user_page();
-	map_page(user_pagetable, (void*) (USER_STACK_TOP - PAGE_SIZE), (void*) user_stack, PTE_V | PTE_W | PTE_U | PTE_R | PTE_X, alloc_user_page);		
+	uintptr_t user_stack = (uintptr_t)alloc_page();
+	map_page(user_pagetable, (void*) (USER_STACK_TOP - PAGE_SIZE), (void*) user_stack, PTE_V | PTE_W | PTE_U | PTE_R | PTE_X, alloc_page);	
 
 	utils_printf("User stack mapped: vaddr=%x, paddr=%x\n", USER_STACK_TOP - PAGE_SIZE, user_stack);
 

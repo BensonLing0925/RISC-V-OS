@@ -94,7 +94,7 @@ void setup_kernel_pagetable() {
     for ( uintptr_t pa = PHYS_BASE ; pa < PHYS_END ; pa += PAGE_SIZE ) {
         uintptr_t va = PHYS_TO_VIRT(pa);
         uintptr_t* entry = walk_physical(kernel_l2_pagetable, (void*)va, alloc_page);
-        *entry = ((pa >> 12) << 10) | PTE_V | PTE_R | PTE_W;
+        *entry = ((pa >> 12) << 10) | PTE_V | PTE_R | PTE_W | PTE_X;
     }
 
 	// identity mapping for copy from user, fixed

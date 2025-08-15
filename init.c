@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "mem.h"
+#include "buddy.h"
 #include "utils.h"
 
 extern char __bss_start;
@@ -75,6 +76,9 @@ void jump_to_smode() {
 }
 
 void jump_to_umode(uintptr_t user_prog_entry, uintptr_t* pagetable) {
+
+	// buddy_init();	
+	test_buddy();
     
     // Configure mstatus for S-mode transition
     uintptr_t sstatus;

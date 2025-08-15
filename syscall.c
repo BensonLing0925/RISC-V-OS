@@ -18,7 +18,7 @@ void syscall_dispatch(uintptr_t syscall_id, uintptr_t a0, uintptr_t a1, uintptr_
 			char buf[BUF_SIZE];
 			buf[BUF_SIZE-1] = '\0';
 			uintptr_t sstatus = read_sstatus();
-
+	
 			// Determine if syscall came from U-mode or S-mode
 			if ((sstatus & (1UL << 8)) == 0) {
 				// syscall from U-mode, must safely copy

@@ -46,6 +46,7 @@
 typedef uint64_t pte_t;
 typedef pte_t* pagetable_t;
 typedef void* (*page_alloc_fn)();
+typedef uint64_t paddr_t;
 
 void setup_pmp();
 void setup_pagetable();
