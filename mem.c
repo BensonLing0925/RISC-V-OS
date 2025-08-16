@@ -215,7 +215,6 @@ void* alloc_page() {
     uintptr_t page = next_free;
     memset((void*)page, 0, PAGE_SIZE);
     next_free += PAGE_SIZE;
-	utils_printf("next_free: %x\n", next_free);
     return (void*)page;
 }
 

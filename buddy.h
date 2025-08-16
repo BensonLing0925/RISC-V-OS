@@ -41,10 +41,15 @@ struct buddy_zone {
 };
 
 void buddy_init();
-void init_free_area(size_t reserved_page, size_t free_start_pfn);
+void init_free_area(size_t free_start_pfn);
 struct page* buddy_alloc(size_t order);
 void buddy_free(paddr_t block_paddr, size_t order);
 void test_buddy();
+void test_buddy_basic();
+void test_buddy_split_merge();
+void test_buddy_exhaust();
+void test_buddy_coalesce_order();
+void test_buddy_fragmentation();
 
 static inline paddr_t page_to_phys(struct page* p) {
 	size_t pfn = p - page_arr;
@@ -53,6 +58,11 @@ static inline paddr_t page_to_phys(struct page* p) {
 
 static inline void* page_to_virt(struct page* p) {
 	return PHYS_TO_VIRT((void*)page_to_phys(p));
+}
+
+static inline uintptr_t align_up(uintptr_t va, size_t order) {
+    uintptr_t size = 1ULL << (order + PAGE_OFFSET);
+    return (va + size - 1) & ~(size - 1);
 }
 
 #endif
